@@ -2,7 +2,7 @@ namespace Gallotube.Models;
 
 public class ErrorViewModel
 {
-    public string? RequestId { get; set; }
+    public stringg RequestId { get; set; }
 
     public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 }
