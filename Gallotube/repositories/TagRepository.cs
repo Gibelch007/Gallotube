@@ -9,7 +9,7 @@ public class TagRepository : ITagRepository
 {
     readonly string connectionString = "server=localhost;port=3306;database=Gallotubedb;uid=root;pwd=''";
 
-    public void Create(Genre model)
+    public void Create(Tag model)
     {
         MySqlConnection connection = new(connectionString);
         string sql = "insert into Tag(Name) values (@Name)";
