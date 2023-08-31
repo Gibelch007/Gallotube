@@ -21,9 +21,9 @@ public class VideoRepository : IVideoRepository
         command.Parameters.AddWithValue("@Título", model.Title);
         command.Parameters.AddWithValue("@TítuloOriginal", model.OriginalTitle);
         command.Parameters.AddWithValue("@Sinopse", model.Synopsis);
-        command.Parameters.AddWithValue("@Year", model.VideoYear);
-        command.Parameters.AddWithValue("@Descrição", model.description);
-        command.Parameters.AddWithValue("@Duração", model.Duration);
+        command.Parameters.AddWithValue("@Year", model.Year);
+        command.Parameters.AddWithValue("@Descrição", model.descricao);
+        command.Parameters.AddWithValue("@Duração", model.Duracao);
         command.Parameters.AddWithValue("@Foto", model.Image);
         
         connection.Open();
