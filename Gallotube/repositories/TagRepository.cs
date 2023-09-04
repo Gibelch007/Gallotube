@@ -39,7 +39,7 @@ public class TagRepository : ITagRepository
         connection.Close();
     }
 
-    public List<Genre> ReadAll()
+    public List<Tag> ReadAll()
     {
         MySqlConnection connection = new(connectionString);
         string sql = "select * from Tag";
@@ -53,12 +53,12 @@ public class TagRepository : ITagRepository
         MySqlDataReader reader = command.ExecuteReader();
         while (reader.Read())
         {
-            Tag tag = new()
+            Tag Tag = new()
             {
                 Id = reader.GetByte("id"),
                 Name = reader.GetString("name")
             };
-            tag.Add(tag);
+            tag.Add(Tag);
         }
         connection.Close();
         return tag;

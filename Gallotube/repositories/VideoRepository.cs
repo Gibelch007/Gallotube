@@ -7,24 +7,31 @@ namespace Gallotube.Repositories;
 
 public class VideoRepository : IVideoRepository
 {
-    readonly string connectionString = "server=localhost;port=3306;database=Gallotubedb;uid=root;pwd=''";
+    readonly string connectionString = "server=localhost;port=3306;database=GalloFlixdb;uid=root;pwd=''";
+    readonly IVideoTagRepository _videoTagRepository;
+
+    public VideoRepository(IVideoTagRepository videoTagRepository)
+    {
+        _videoTagRepository = videoTagRepository;
+    }
+
 
     public void Create(Video model)
     {
         MySqlConnection connection = new(connectionString);
-        string sql = "insert into Video (Título, TítuloOriginal, Descrição, Year, Duração, ClassificaçãoEtária, Foto) "
-              + "values (@Título, @TítuloOriginal, @Descrição, @Year, @Duração, @ClassificaçãoEtária, @Foto)";
+        string sql = "insert into Movie(Title, OriginalTitle, Synopsis, MovieYear, Duration, AgeRating, Image) "
+              + "values (@Title, @OriginalTitle, @Synopsis, @MovieYear, @Duration, @AgeRating, @Image)";
         MySqlCommand command = new(sql, connection)
         {
             CommandType = CommandType.Text
         };
-        command.Parameters.AddWithValue("@Título", model.Title);
-        command.Parameters.AddWithValue("@TítuloOriginal", model.OriginalTitle);
-        command.Parameters.AddWithValue("@Sinopse", model.Synopsis);
-        command.Parameters.AddWithValue("@Year", model.Year);
-        command.Parameters.AddWithValue("@Descrição", model.descricao);
-        command.Parameters.AddWithValue("@Duração", model.Duracao);
-        command.Parameters.AddWithValue("@Foto", model.Image);
+        command.Parameters.AddWithValue("@Title", model.Title);
+        command.Parameters.AddWithValue("@OriginalTitle", model.OriginalTitle);
+        command.Parameters.AddWithValue("@Synopsis", model.Synopsis);
+        command.Parameters.AddWithValue("@MovieYear", model.MovieYear);
+        command.Parameters.AddWithValue("@Duration", model.Duration);
+        command.Parameters.AddWithValue("@AgeRating", model.AgeRating);
+        command.Parameters.AddWithValue("@Image", model.Image);
         
         connection.Open();
         command.ExecuteNonQuery();
@@ -55,26 +62,26 @@ public class VideoRepository : IVideoRepository
             CommandType = CommandType.Text
         };
         
-        List<Video> videos= new();
+        List<Video> videos = new();
         connection.Open();
         MySqlDataReader reader = command.ExecuteReader();
         while (reader.Read())
         {
-             Video videos = new()
+           Video Videos = new()
             {
                 Id = reader.GetInt32("id"),
-                Title = reader.GetString("título"),
-                OriginalTitle = reader.GetString("TítuloOriginal"),
-                Synopsis = reader.GetString("Sinopse"),
-                VideoYear = reader.GetInt16("Year"),
-                Description = reader.GetInt16("Descrição"),
-                Duration = reader.GetByte("Descrição"),
-                Image = reader.GetString("Foto")
+                Title = reader.GetString("title"),
+                OriginalTitle = reader.GetString("originalTitle"),
+                Synopsis = reader.GetString("synopsis"),
+                MovieYear = reader.GetInt16("movieYear"),
+                Duration = reader.GetInt16("duration"),
+                AgeRating = reader.GetByte("ageRating"),
+                Image = reader.GetString("image")
             };
-            videos.Add(Video);
+            videos.Add(Videos);
         }
         connection.Close();
-        return videos;
+        return Video;
     }
 
     public Video ReadById(int? id)
@@ -92,32 +99,32 @@ public class VideoRepository : IVideoRepository
         reader.Read();
         if (reader.HasRows)
         {
-            Video video = new();
-            
-                Id = reader.GetInt32("id");
-                Title = reader.GetString("título");
-                OriginalTitle = reader.GetString("TítuloOriginal");
-                Synopsis = reader.GetString("Sinopse");
-                VideoYear = reader.GetInt16("Year");
-                Description = reader.GetInt16("Descrição");
-                Duration = reader.GetByte("Descrição");
-                Image = reader.GetString("imagem");
+           Video Video = new()
+            {
+                Id = reader.GetInt32("id"),
+                Title = reader.GetString("title"),
+                OriginalTitle = reader.GetString("originalTitle"),
+                Synopsis = reader.GetString("synopsis"),
+                MovieYear = reader.GetInt16("movieYear"),
+                Duration = reader.GetInt16("duration"),
+                AgeRating = reader.GetByte("ageRating"),
+                Image = reader.GetString("image")
             };
             connection.Close();
-            return  video ;
+            return Video;
         }
         connection.Close();
         return null;
-    
+    }
 
     public void Update(Video model)
     {
         MySqlConnection connection = new(connectionString);
-        string sql = "update Movie set "
+        string sql = "update Video set "
                         + "Title = @Title, "
                         + "OriginalTitle = @OriginalTitle, "
                         + "Synopsis = @Synopsis, "
-                        + "MovieYear = @MovieYear, "
+                        + "VideoYear = @VideoYear, "
                         + "Duration = @Duration, "
                         + "AgeRating = @AgeRating, "
                         + "Image = @Image "
@@ -126,16 +133,34 @@ public class VideoRepository : IVideoRepository
         {
             CommandType = CommandType.Text
         };
-        command.Parameters.AddWithValue("@Título", model.Title);
-        command.Parameters.AddWithValue("@TítuloOriginal", model.OriginalTitle);
-        command.Parameters.AddWithValue("@Sinopse", model.Synopsis);
-        command.Parameters.AddWithValue("@Year", model.Year);
-        command.Parameters.AddWithValue("@Descrição", model.Description);
-        command.Parameters.AddWithValue("@Duração", model.Duration);
-        command.Parameters.AddWithValue("@Foto", model.image);
+        command.Parameters.AddWithValue("@Id", model.Id);
+        command.Parameters.AddWithValue("@Title", model.Title);
+        command.Parameters.AddWithValue("@OriginalTitle", model.OriginalTitle);
+        command.Parameters.AddWithValue("@Synopsis", model.Synopsis);
+        command.Parameters.AddWithValue("@VideoYear", model.VideoYear);
+        command.Parameters.AddWithValue("@Duration", model.Duration);
+        command.Parameters.AddWithValue("@AgeRating", model.AgeRating);
+        command.Parameters.AddWithValue("@Image", model.Image);
         
         connection.Open();
         command.ExecuteNonQuery();
         connection.Close();
+    }
+
+    public List<Movie> ReadAllDetailed()
+    {
+        List<Movie> Movies = ReadAll();
+        foreach (Movie movie in Movies)
+        {
+            movie.Genres = _movieGenreRepository.ReadGenresByMovie(movie.Id);
+        }
+        return Movies;
+    }
+
+    public Movie ReadByIdDetailed(int id)
+    {
+        Movie movie = ReadById(id);
+        movie.Genres = _movieGenreRepository.ReadGenresByMovie(movie.Id);
+        return movie;
     }
 }
